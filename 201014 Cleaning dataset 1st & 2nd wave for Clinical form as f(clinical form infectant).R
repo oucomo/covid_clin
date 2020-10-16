@@ -551,7 +551,7 @@ llr$n_infected_categ = cut(llr$n_infected,breaks=c(0,0.5,2,4,100),include.lowest
 
 llr$superspreader = llr$n_infected>=5
 
-########## contact with severe case ##
+# contact with superspreaders ##
 
 llr$contact_with_superspreader = F
 for (i in which(llr$n_contacts>0)) {
