@@ -365,14 +365,14 @@ llr$HCW = grepl("healthcare staff",llr$profession) | llr$HCW
 llr$HCW = grepl("nurse",llr$profession) | llr$HCW 
 llr$HCW = grepl("paramedic",llr$profession) | llr$HCW 
 llr$HCW = grepl("pharmacist",llr$profession) | llr$HCW 
-with(llr,table(profession,HCW,useNA = "ifany"))
+# with(llr,table(profession,HCW,useNA = "ifany"))
 
 #Hospital cluster suspected_source
 llr$Hospital_cluster = grepl("hospital",llr$sus_infect_location) 
 llr$Hospital_cluster = grepl("medical center",llr$sus_infect_location) | llr$Hospital_cluster 
 llr$Hospital_cluster = grepl("hospital",llr$suspected_source) | llr$Hospital_cluster 
 llr$Hospital_cluster = grepl("medical center",llr$suspected_source) | llr$Hospital_cluster 
-with(llr,table(suspected_source,Hospital_cluster,useNA = "ifany"))
+# with(llr,table(suspected_source,Hospital_cluster,useNA = "ifany"))
 
 ### end wave 1
 
@@ -383,8 +383,8 @@ llr_wave2 = llr
 
 llr_all = smartbind(as.data.frame(llr_wave2),
                     as.data.frame(llr_wave1))
-dim(llr_all)
-colnames(llr_all)
+# dim(llr_all)
+# colnames(llr_all)
 # table(llr_all$wave)
 llr = llr_all
 
@@ -536,6 +536,30 @@ for (i in which(llr$n_contacts>0)) {
 }
 # freq(!is.na(llr$age_contact_over40))
 # freq(llr$age_contact_over40)
+
+########### superspreaders ######
+# N persons infected by each person
+all_contacts = paste0(  as.character(llr$contact_id[!is.na(llr$contact_id)]), collapse = ",")
+llr$n_infected = str_count(pattern = llr$id,all_contacts)
+# freq(llr$n_infected)
+llr$n_infected_max9 = ifelse(llr$n_infected>8,"9+",llr$n_infected)
+
+#by categories
+llr$n_infected_categ = cut(llr$n_infected,breaks=c(0,0.5,2,4,100),include.lowest=T,
+                           labels=c("0","1-2","3-4","5+"))
+# freq(llr$n_infected_categ )
+
+llr$superspreader = llr$n_infected>=5
+
+########## contact with severe case ##
+
+llr$contact_with_superspreader = F
+for (i in which(llr$n_contacts>0)) {
+  c = unlist(strsplit(as.character(llr[i,"contact_id"]), "\\,"))
+  ci = which(llr$id %in% c)
+  llr$contact_with_superspreader[i] <- any(llr$superspreader[ci])
+}
+# freq(llr$contact_with_superspreader)
 
 #### export environment ####
 save.image(file="C:/Users/thoma/Documents/3.7 COVID-19/Modelling - Marc/Rmarkdown/201014 both datasets.RData")

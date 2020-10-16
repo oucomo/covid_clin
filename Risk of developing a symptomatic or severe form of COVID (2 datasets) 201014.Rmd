@@ -331,10 +331,12 @@ geeORtable(fit)
 
 # Influence of healthcare
 To investigate whether this observation could be an artifact due to healthcare, e.g. better observation of symptoms among healthcare workers or when hospitalized, we introduced 2 variables in the multivariate model: 
-1. healthcare-related profession: there were `r sum(llr$HCW)` healthcare workers in the population (`r format(sum(llr$HCW)*100/nrow(llr), digits=1, nsmall=1)`%);
-2. belonging to a hospital cluster: there were `r sum(llr$Hospital_cluster)` individuals whose source of infection was related to an hospital in the population (`r format(sum(llr$Hospital_cluster)*100/nrow(llr), digits=1, nsmall=1)`%).
 
-> Lots of hospital-acquired infections! --> to be discussed!!!
+1. healthcare-related profession: there were `r sum(llr$HCW)` healthcare workers in the population (`r format(sum(llr$HCW)*100/nrow(llr), digits=1, nsmall=1)`%);
+
+2. belonging to a hospital cluster: there were `r sum(llr$Hospital_cluster)` individuals whose source of infection was related to an hospital or medical centre in the population (`r format(sum(llr$Hospital_cluster)*100/nrow(llr), digits=1, nsmall=1)`%).
+
+> Lots of individuals in hospital clusters (2/3 in wave 2)! --> to be discussed!!!
 
 ### Influence of healthcare on the association between symptomatic form and symptomatic infector
 ```{r, echo=FALSE,include=F}
@@ -351,13 +353,13 @@ fit2 = gee(Symptomatic ~ contact_with_symptomatic + HCW + Hospital_cluster + Age
           corstr="exchangeable") 
 ```
 
-In a multivariate analysis, being a healthcare workers strongly **decreases** the risk of developing a symptomatic form (OR `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),2]`, p `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),3]`). Nevertheless, adding the age of the infector didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *healthcare worker* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when considering the profession.
+In a multivariate analysis, being a healthcare workers strongly **decreases** the risk of developing a symptomatic form (OR `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),2]`, p `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),3]`). Nevertheless, adding this variable to the model didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *healthcare worker* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when considering the profession.
 
 ```{r ,echo=F}
 geeORtable(fit1)
 ```
 
-In contrast, belonging to a healthcare cluster was not associated with the risk of developing a symptomatic form (OR `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),2]`, p= `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),3]`) and adding the age of the infector didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit2)[grepl("contact_with", geeORtable(fit2)[,1]),2]` when considering the type of cluster.
+In contrast, belonging to a healthcare cluster was not associated with the risk of developing a symptomatic form (OR `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),2]`, p= `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),3]`) and adding this variable didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit2)[grepl("contact_with", geeORtable(fit2)[,1]),2]` when considering the type of cluster.
 
 ```{r ,echo=F}
 geeORtable(fit2)
@@ -378,16 +380,17 @@ fit2 = gee(Severe ~ contact_with_severe + HCW + Hospital_cluster + Age + Gender_
           corstr="exchangeable") 
 ```
 
-In a multivariate analysis, being a healthcare workers strongly **increases** the risk of developing a symptomatic form (OR `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),2]`, p `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),3]`). Nevertheless, adding the age of the infector didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *healthcare worker* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when considering the profession.
+In a multivariate analysis, being a healthcare workers strongly **increases** the risk of developing a severe form (OR `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),2]`, p `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),3]`). Nevertheless, adding this variable didn't modify the relationship between severe form in infectee and severe form in infector: the OR of being a contact of a severe case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *healthcare worker* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when considering the profession.
 
 ```{r ,echo=F}
 geeORtable(fit1)
 ```
 
-Belonging to a healthcare cluster was also associated with the risk of developing a severe form (OR `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),2]`, p `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),3]`), but adding the age of the infector didn't modify (significantly???) the relationship between severe form in infectee and infector: the OR of being a contact of a severe case was `r geeORtable(fit2)[grepl("contact_with", geeORtable(fit2)[,1]),2]` when considering the type of cluster (instead of `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]`).
+Belonging to a healthcare cluster was also associated with the risk of developing a severe form (OR `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),2]`, p `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),3]`), but adding this variable didn't modify (significantly???) the relationship between severe form in infectee and infector: the OR of being a contact of a severe case was `r geeORtable(fit2)[grepl("contact_with", geeORtable(fit2)[,1]),2]` when considering the type of cluster (instead of `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]`).
 
-> I don't know how to test the significance of changes in a coef (here: contact_with_severe) when adding a variable (here: Hospital_cluster) to a model.
-> `gee(Severe ~ contact_with_severe + Hospital_cluster + HCW + Age + Gender_FM + Comorbidity, data=llr, id=wave, family=binomial, corstr="exchangeable")`
+> I don't know how to test the significance of changes in a coef (here: `contact_with_severe`) when adding a variable (here: `Hospital_cluster`) to a model.
+> `gee(Severe ~ contact_with_severe + Hospital_cluster + HCW + Age + Gender_FM +`
+`Comorbidity, data=llr, id=wave, family=binomial, corstr="exchangeable")`
 
 ```{r ,echo=F}
 geeORtable(fit2)
@@ -395,4 +398,90 @@ geeORtable(fit2)
 
 
 # Superspreaders
+## Description
+In our population, the majority of cases (`r sum(llr$n_infected==0)`/`r nrow(llr)`, `r format(sum(llr$n_infected==0)*100/nrow(llr), digits=1, nsmall=1)`%) was not listed among the possible infectors, i.e. they possibly didn't infect anyone. A small proportion of cases possibly have been listed in the possible infectors of 5 or more individuals (`r sum(llr$n_infected_categ=="5+")`/`r nrow(llr)`, `r format(sum(llr$n_infected_categ=="5+")*100/nrow(llr), digits=1, nsmall=1)`%). This subgroup will be considered later as *superspreaders*, even if there's no certainty that they were actually the source of infection. Overall, `r format(sum(llr$contact_with_superspreader==0)*100/nrow(llr), digits=1, nsmall=1)`% of cases have had a contact with those superspreaders and, in cases for whom at least one contact is found, this proportion is `r format(sum(llr$contact_with_superspreader[llr$n_contacts>0])*100/ sum(llr$n_contacts>0), digits=1, nsmall=1)`%.
 
+```{r,  echo=FALSE}
+ggplot(llr[llr$n_infected!=0,], aes(x=n_infected_max9)) + geom_bar(stat="count") + xlab("N of infectees per infector") + ylab("N of infectors")
+```
+
+## Superspreaders and risk of symptomatic form 
+
+```{r, echo=FALSE,include=F}
+fit_ref = gee(Symptomatic ~ contact_with_symptomatic + 
+                Age + Gender_FM + Comorbidity + HCW + Hospital_cluster,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit1 = gee(Symptomatic ~ contact_with_symptomatic + superspreader +
+             Age + Gender_FM + Comorbidity + HCW + Hospital_cluster,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit2 = gee(Symptomatic ~ contact_with_symptomatic + contact_with_superspreader +
+             Age + Gender_FM + Comorbidity + HCW + Hospital_cluster,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+```
+
+In a multivariate analysis, being a superspreader slightly increased the risk of developing a symptomatic form (OR `r geeORtable(fit1)[grepl("superspreader", geeORtable(fit1)[,1]),2]`, p= `r geeORtable(fit1)[grepl("superspreader", geeORtable(fit1)[,1]),3]`), and adding this variable didn't modify the relationship between symptomatic form in infectee and in infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *superspreader* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when adding it.
+
+```{r ,echo=F}
+geeORtable(fit1)
+```
+
+Similarly, being a contact of a superspreader was not associated with the risk of developing a symptomatic form (OR `r geeORtable(fit2)[grepl("contact_with_superspreader", geeORtable(fit2)[,1]),2]`, p= `r geeORtable(fit2)[grepl("contact_with_superspreader", geeORtable(fit2)[,1]),3]`), and adding this variable didn't modify the relationship between symptomatic form in infectee and in infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit2)[grepl("contact_with_sym",     geeORtable(fit2)[,1]),2]` when adding the variable *contact with superspreader* to the model.
+
+```{r ,echo=F}
+geeORtable(fit2)
+```
+
+## Superspreaders and risk of severe form 
+
+```{r, echo=FALSE,include=F}
+fit_ref = gee(Severe ~ contact_with_severe + 
+                Age + Gender_FM + Comorbidity + HCW + Hospital_cluster,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit1 = gee(Severe ~ contact_with_severe + superspreader +
+             Age + Gender_FM + Comorbidity + HCW + Hospital_cluster,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit2 = gee(Severe ~ contact_with_severe + contact_with_superspreader +
+             Age + Gender_FM + Comorbidity + HCW + Hospital_cluster,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+```
+
+In a multivariate analysis, being a superspreader didn't change the risk of developing a severe form (OR `r geeORtable(fit1)[grepl("superspreader", geeORtable(fit1)[,1]),2]`, p= `r geeORtable(fit1)[grepl("superspreader", geeORtable(fit1)[,1]),3]`), and adding this variable didn't modify the relationship between severe form in infectee and in infector: the OR of being a contact of a severe case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *superspreader* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when adding it.
+
+```{r ,echo=F}
+geeORtable(fit1)
+```
+
+Surprisingly, being a contact of a superspreader was associated with a **reduced** risk of developing a severe form (OR `r geeORtable(fit2)[grepl("contact_with_superspreader", geeORtable(fit2)[,1]),2]`, p= `r geeORtable(fit2)[grepl("contact_with_superspreader", geeORtable(fit2)[,1]),3]`), even if adding this variable didn't modify the relationship between severe form in infectee and in infector: the OR of being a contact of a severe case was `r geeORtable(fit2)[grepl("contact_with_sev", geeORtable(fit2)[,1]),2]` when adding the variable *contact with superspreader* to the model.
+
+```{r ,echo=F}
+geeORtable(fit2)
+```
+
+
+> To be discussed: possibly an unmeasured confounding factor? (note that adding `age of contact` to the gee model make it impossible to converge)
+
+# Conclusions
+
+* Severity in infector is associated with severity in infectee
+* Symptomatic form in infector is associated with symptomatic form in infectee
+* These associations are not (much) modified when trying to add confounding variables, such as :
+  + Age of infectee
+  + Gender
+  + Comorbidities
+  + Infector symptomatic at the time of last contact (in a subset where n infectors = 1)
+  + Wave (clustering variable)
+  + Age of infector (in a subset where n infectors = 1)
+  + Profession of infectee is healthcare worker
+  + Healthcare-associated cluster
+  + Being a superspreader
+  + Being a contact of a superspreader
