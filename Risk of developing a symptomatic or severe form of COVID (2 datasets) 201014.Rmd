@@ -1,0 +1,398 @@
+---
+title: Risk of developing a symptomatic or severe form of COVID-19 depending on the
+  clinical form of the infecting individual
+author: "Thomas Kesteman"
+date: "14/10/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load myData, include=FALSE}
+load("C:/Users/thoma/Documents/3.7 COVID-19/Modelling - Marc/Rmarkdown/201014 both datasets.RData") 
+```
+
+# Description of data
+### Dataset 1
+Line list Vietnam “Pos COVID-19 413 update” + contact informations from Tan Le Van for 2 individuals from the “Buddha bar” cluster (data received 08/05/2020)
+
+N individuals in the dataset: `r sum(llr$wave==1)`
+
+### Dataset 2
+Line list Vietnam Da Nang (rds file as of 16 Sep 2020)
+
+N individuals in the dataset: `r sum(llr$wave==2)`
+
+## Contacts
+N individuals whom contact(s) has been identified: `r sum(llr$n_contacts>0)`
+
+Out of the `r sum(llr$n_contacts_before_clean %in% 1)` individuals with 1 contact mentioned, there were `r sum(llr$pair_infectorinfectee_YN)/2 + sum(llr$n_contacts_before_clean %in% 1 & llr$n_contacts %in% 0)` pairs of cases whom the infector was the infectee and vice-versa. Using dates of onset, the infector could be identified in `r sum(llr$n_contacts_before_clean %in% 1 & llr$n_contacts %in% 0)` pairs; in the other pairs, there was no possibility to know who was the infector and who was the infectee.
+
+```{r results = 'asis', echo=FALSE}
+mytable = with(llr,table(n_contacts,paste("Dataset",wave)))
+library(kableExtra)
+knitr::kable(mytable, "html", caption = "N of contacts identified per dataset") %>%
+  kable_styling(full_width = F,position = "left")
+```
+
+## Comorbidities
+`r sum(llr$Diabetes)` cases had diabetes, `r sum(llr$Cancer)` cases had cancer, `r sum(llr$Obesity, na.rm=T)` had obesity, `r sum(llr$Hypertension)` had hypertension, `r sum(llr$Kidney_failure, na.rm=T)` had kidney failure, and `r sum(llr$Cardiovascular | llr$Cardiac_injury, na.rm=T)` had other cardiovascular pathologies. Comorbidities such as arthritis, asthma, epilepsy, vestibular disorders, congenital hemolysis, gastritis, spinal pain, urinary tract infections, and sinusitis have been disregarded as regards COVID-19. Overall, `r sum(llr$Comorbidity)` cases had a significant comorbidity as regards COVID-19.
+
+## Clinical forms of COVID-19 
+### Symptomatic vs asymptomatic
+The definition of asymptomatic didn't vary much between the 2 datasets. Therefore, results can be compared.
+
+* In the whole dataset, there were `r sum(llr$Symptomatic %in% F)` asymptomatic cases (`r format(100*sum(llr$Symptomatic %in% F)/nrow(llr), digits=1, nsmall=1)`%), `r sum(llr$Symptomatic %in% T)` symptomatic (`r format(100*sum(llr$Symptomatic %in% T)/nrow(llr), digits=1, nsmall=1)`%), and `r sum(llr$Symptomatic %in% NA)` NA (`r format(100*sum(llr$Symptomatic %in% NA)/nrow(llr), digits=1, nsmall=1)`%). 
+
+* Out of the `r sum(llr$n_contacts>0)` cases whose contact has been identified, there were `r sum(llr$Symptomatic %in% F & llr$n_contacts>0)` asymptomatic cases (`r format(100*sum(llr$Symptomatic %in% F & llr$n_contacts>0)/sum(llr$n_contacts>0), digits=1, nsmall=1)`%), `r sum(llr$Symptomatic %in% T & llr$n_contacts>0)` symptomatic (`r format(100*sum(llr$Symptomatic %in% T & llr$n_contacts>0)/sum(llr$n_contacts>0), digits=1, nsmall=1)`%), and `r sum(llr$Symptomatic %in% NA & llr$n_contacts>0)` NA (`r format(100*sum(llr$Symptomatic %in% NA & llr$n_contacts>0)/sum(llr$n_contacts>0), digits=1, nsmall=1)`%). 
+
+  + In dataset 1, there were `r sum(llr$n_contacts>0 & llr$wave==1)` cases whose contact has been identified, including `r sum(llr$Symptomatic %in% F & llr$n_contacts>0 & llr$wave==1)` asymptomatic cases (`r format(100*sum(llr$Symptomatic %in% F & llr$n_contacts>0 & llr$wave==1)/sum(llr$n_contacts>0 & llr$wave==1), digits=1, nsmall=1)`%), `r sum(llr$Symptomatic %in% T & llr$n_contacts>0 & llr$wave==1)` symptomatic (`r format(100*sum(llr$Symptomatic %in% T & llr$n_contacts>0 & llr$wave==1)/sum(llr$n_contacts>0 & llr$wave==1), digits=1, nsmall=1)`%), and `r sum(llr$Symptomatic %in% NA & llr$n_contacts>0 & llr$wave==1)` NA (`r format(100*sum(llr$Symptomatic %in% NA & llr$n_contacts>0 & llr$wave==1)/sum(llr$n_contacts>0 & llr$wave==1), digits=1, nsmall=1)`%). 
+  
+  + In dataset 2, there were `r sum(llr$n_contacts>0 & llr$wave==2)` cases whose contact has been identified, including `r sum(llr$Symptomatic %in% F & llr$n_contacts>0 & llr$wave==2)` asymptomatic cases (`r format(100*sum(llr$Symptomatic %in% F & llr$n_contacts>0 & llr$wave==2)/sum(llr$n_contacts>0 & llr$wave==2), digits=1, nsmall=1)`%), `r sum(llr$Symptomatic %in% T & llr$n_contacts>0 & llr$wave==2)` symptomatic (`r format(100*sum(llr$Symptomatic %in% T & llr$n_contacts>0 & llr$wave==2)/sum(llr$n_contacts>0 & llr$wave==2), digits=1, nsmall=1)`%), and `r sum(llr$Symptomatic %in% NA & llr$n_contacts>0 & llr$wave==2)` NA (`r format(100*sum(llr$Symptomatic %in% NA & llr$n_contacts>0 & llr$wave==2)/sum(llr$n_contacts>0 & llr$wave==2), digits=1, nsmall=1)`%). 
+
+  + Proportions of asymptomatic cases have been inversed (`r format(100*sum(llr$Symptomatic %in% F & llr$n_contacts>0 & llr$wave==1)/sum(llr$n_contacts>0 & llr$wave==1), digits=1, nsmall=1)`% vs `r format(100*sum(llr$Symptomatic %in% F & llr$n_contacts>0 & llr$wave==2)/sum(llr$n_contacts>0 & llr$wave==2), digits=1, nsmall=1)`%, p = `r format(with(llr, fisher.test(Symptomatic,wave))$p.value, digits=2, nsmall=1)`) between the 2 datasets, despite a similar definition.
+
+
+### Severe vs non-severe
+The definition of severity changed between the 2 datasets: in dataset 1, it's defined as any need in oxygen, while in dataset 2 it was defined as "severity" (defined by the clinician) at admission or fatal outcome. Therefore, results cannot be compared.
+
+* In dataset 1, there were `r sum(llr$Severe %in% T & llr$wave==1)` severe cases (`r format(100*sum(llr$Severe %in% T & llr$wave==1)/sum(llr$wave==1), digits=1, nsmall=1)`%), and `r sum(llr$Severe %in% NA & llr$wave==1)` NA (symptom NA were considered as non-severe).
+
+  + In this dataset, among `r sum(llr$n_contacts>0 & llr$wave==1)` cases whose contact has been identified, there were `r sum(llr$Severe %in% T & llr$n_contacts>0 & llr$wave==1)` severe cases (`r format(100*sum(llr$Severe %in% T & llr$n_contacts>0 & llr$wave==1)/sum(llr$n_contacts>0 & llr$wave==1), digits=1, nsmall=1)`%). 
+  
+* In dataset 2, there were `r sum(llr$Severe %in% T & llr$wave==2)` severe cases (`r format(100*sum(llr$Severe %in% T & llr$wave==2)/sum(llr$wave==2), digits=1, nsmall=1)`%).
+
+  + In this dataset, among `r sum(llr$n_contacts>0 & llr$wave==2)` cases whose contact has been identified, there were `r sum(llr$Severe %in% T & llr$n_contacts>0 & llr$wave==2)` severe cases (`r format(100*sum(llr$Severe %in% T & llr$n_contacts>0 & llr$wave==2)/sum(llr$n_contacts>0 & llr$wave==2), digits=1, nsmall=1)`%). 
+
+* Proportions of severe cases were similar (`r format(100*sum(llr$Severe %in% T & llr$wave==1)/sum(llr$wave==1), digits=1, nsmall=1)`% vs `r format(100*sum(llr$Severe %in% T & llr$wave==2)/sum(llr$wave==2), digits=1, nsmall=1)`%, p = `r format(with(llr, fisher.test(Severe,wave))$p.value, digits=2, nsmall=1)`) between the 2 datasets, despite a different definition.
+
+# Clinical form of infectee as a function of the clinical form of infector
+## Effect of a symptomatic infector
+### Association between severity and symptomatic infector
+```{r, echo=FALSE}
+t = with(llr,table(Severe,contact_with_symptomatic))
+```
+
+The probability to develop a severe form is higher in contacts of a symptomatic case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), but this difference is non-significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). 
+
+
+```{r, echo=FALSE,include=F}
+library(gee)
+geeORtable = function(fit,ref_txt = "1.00", sepCI=" - ",interact=F) { 
+  fit_res = as.data.frame(paste0(format(round(exp(fit$coef[-1]),2), nsmall=2)," [",
+                                 sub(" ","",format(round(exp(coef(fit)-summary(fit)$coef[,4]*qnorm(0.975)),2), nsmall=2)[-1]),sepCI,
+                                 sub(" ","",format(round(exp(coef(fit)+summary(fit)$coef[,4]*qnorm(0.975)),2), nsmall=2)[-1]),"]"))
+  colnames(fit_res) = "ORCI"
+  fit_res = cbind(fit_res,pval =  as.character(ifelse(2*pnorm(-abs(summary(fit)$coef[-1,5]))<0.001,"<0.001",round(2*pnorm(-abs(summary(fit)$coef[-1,5])),3))))
+  fit_res = cbind(fit_res,Sign = cut(2*pnorm(-abs(summary(fit)$coef[-1,5])),breaks=c(0,0.001,0.01,0.05,1),labels=c("***","**","*",""),include.lowest=T))
+  fit_res = cbind(Categ =labels(fit$coef[-1]), fit_res)
+  if (!interact) {
+    varfit = gsub(" ","",unlist(strsplit(substr(as.character(fit$call)[2],regexpr("~",as.character(fit$call)[2])[1]+2,nchar(as.character(fit$call)[2])),"[+]")))
+    labels_varfit = lapply(varfit,FUN=function(x) {eval(parse(text=paste0("levels(",as.character(fit$call)[4],"$",x,")")))})
+    varfit_rep = rep(varfit,unlist(lapply(labels_varfit,FUN=function(x){length(x)})))
+    Categ = paste0(varfit_rep,unlist(labels_varfit))
+    order_var= 	rep(c(1:length(varfit)),unlist(lapply(labels_varfit,FUN=function(x){length(x)})))
+    tabnames_varfit = cbind(as.data.frame(Categ),as.data.frame(order_var))
+    fit_res = merge(tabnames_varfit, fit_res,all=T)
+    colnames(fit_res) = c("Categ.","order_var","Adjusted OR [95%IC]","pval","Signif.")
+    fit_res[,5] = ifelse(is.na(fit_res[,5]),"",as.character(fit_res[,5]))
+    fit_res[,4] = ifelse(is.na(fit_res[,4]),"",as.character(fit_res[,4]))
+    fit_res[,3] = ifelse(is.na(fit_res[,3]),ref_txt,as.character(fit_res[,3]))
+    fit_res  = fit_res[order(fit_res$order_var, fit_res$Categ.),]
+    fit_res  = fit_res[,-2]
+  }
+  return(fit_res) 
+}
+fit = gee(Severe ~ contact_with_symptomatic + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+Nevertheless, in a multivariate analysis (GEE), taking into account the age, the gender, and the comorbidities of the individual and considering an exchangeable within-dataset correlation structure, the relationship between severity and being contact of a symptomatic case becomes significant (OR `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+
+```{r, echo=FALSE}
+t = with(llr,table(Severe,contact_with_sympt_attimeofcontact))
+```
+```{r, echo=FALSE,include=F}
+fit = gee(Severe ~ contact_with_sympt_attimeofcontact + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+
+Similarly, if symptomatic infectors are defined as those who had developed symptoms at time of contact with the infectee, the probability to develop a severe form is higher in contacts of a symptomatic case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), but this difference is non-significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). And in a multivariate analysis, the relationship between severity and being contact of a symptomatic case becomes significant as well (OR `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+### Association between symptomatic form and symptomatic infector
+```{r, echo=FALSE}
+t = with(llr,table(Symptomatic,contact_with_symptomatic))
+```
+
+The probability to develop a symptomatic form is higher in contacts of a symptomatic case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). 
+
+
+```{r, echo=FALSE,include=F}
+fit = gee(Symptomatic ~ contact_with_symptomatic + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+In a multivariate analysis (GEE), taking into account the age, the gender, and the comorbidities of the individual and considering an exchangeable within-dataset correlation structure, the relationship between symptomatic form and being contact of a symptomatic case remains significant (OR `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+
+```{r, echo=FALSE}
+t = with(llr,table(Symptomatic,contact_with_sympt_attimeofcontact))
+```
+```{r, echo=FALSE,include=F}
+fit = gee(Symptomatic ~ contact_with_sympt_attimeofcontact + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+
+Similarly, if symptomatic infectors are defined as those who had developed symptoms at time of contact with the infectee, the probability to develop a symptomatic form is higher in contacts of a symptomatic case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is significant but less marked than with the previous definition of contact with symptomatic case (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). And in a multivariate analysis, the relationship between symptomatic form and being contact of a symptomatic case remains significant as well (OR `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+
+
+```{r, echo=FALSE}
+t = with(llr[!llr$pair_infectorinfectee_YN,],table(Symptomatic,contact_with_symptomatic))
+```
+```{r, echo=FALSE,include=F}
+fit = gee(Symptomatic ~ contact_with_symptomatic + Age + Gender_FM + Comorbidity,
+          data=llr[!llr$pair_infectorinfectee_YN,],id=wave,family=binomial,corstr="exchangeable") 
+```
+
+When excluding the pairs where infector is infectee, the probability to develop a symptomatic form remains higher in contacts of a symptomatic case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). And in a multivariate analysis, the relationship between symptomatic form and being contact of a symptomatic case remains significant as well (OR `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+
+## Effect of an infector with a severe form
+### Association between severity in infectee and severity in infector
+```{r, echo=FALSE}
+t = with(llr,table(Severe,contact_with_severe))
+```
+
+The probability to develop a severe form is higher in contacts of a severe case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case or non-severe case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). 
+
+
+```{r, echo=FALSE,include=F}
+fit = gee(Severe ~ contact_with_severe + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+In a multivariate analysis (GEE), taking into account the age, the gender, and the comorbidities of the individual and considering an exchangeable within-dataset correlation structure, the relationship between severity and being contact of a severe case remains significant (OR `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+
+```{r, echo=FALSE}
+llr$contact_w_severe_sympt_atcontact = llr$contact_with_severe_sympt_attimeofcontact
+t = with(llr,table(Severe,contact_w_severe_sympt_atcontact))
+```
+```{r, echo=FALSE,include=F}
+fit = gee(Severe ~ contact_w_severe_sympt_atcontact + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+
+Similarly, if we restrict the analysis to those infectors who had developed symptoms before contact with the infectee, the probability to develop a severe form is higher in contacts of a severe case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`% vs `r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). In a multivariate analysis, this relationship remains significant as well (OR `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+```{r, echo=FALSE}
+t = with(llr[!llr$pair_infectorinfectee_YN,],table(Severe,contact_with_severe))
+```
+```{r, echo=FALSE,include=F}
+fit = gee(Severe ~ contact_with_severe + Age + Gender_FM + Comorbidity,
+          data=llr[!llr$pair_infectorinfectee_YN,],id=wave,family=binomial,corstr="exchangeable") 
+```
+
+When excluding the pairs where infector is infectee and vice-versa, the probability to develop a severe form remains higher in contacts of a severe case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`% vs `r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). In a multivariate analysis, this relationship remains significant as well (OR `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+### Association between symptomatic form and severity in infector
+```{r, echo=FALSE}
+t = with(llr,table(Symptomatic,contact_with_severe))
+```
+
+The probability to develop a symptomatic form is similar in contacts of a severe case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case or non-severe case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is non-significant (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). 
+
+```{r, echo=FALSE,include=F}
+fit = gee(Symptomatic ~ contact_with_severe + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+In a multivariate analysis (GEE), taking into account the age, the gender, and the comorbidities of the individual and considering an exchangeable within-dataset correlation structure, the relationship between symptomatic form and being contact of a severe case is closer to the significance threshold but remains modest (OR `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+
+```{r, echo=FALSE}
+t = with(llr,table(Symptomatic,contact_w_severe_sympt_atcontact))
+```
+```{r, echo=FALSE,include=F}
+fit = gee(Symptomatic ~ contact_w_severe_sympt_atcontact + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,corstr="exchangeable") 
+```
+
+Similarly, if we restrict the analysis to infectors who had developed symptoms before contact, the probability to develop a symptomatic form is a bit higher in contacts of a severe case (`r t[2,2]`/`r sum(t[,2])`, `r format(prop.table(t,2)[2,2]*100, digits=1, nsmall=1)`%) than in contacts of an asymptomatic case or non-severe case (`r t[2,1]`/`r sum(t[,1])`, `r format(prop.table(t,2)[2,1]*100, digits=1, nsmall=1)`%), and this difference is non-significant in a 2x2 table (OR `r format(fisher.test(t)$estimate, digits=2, nsmall=2)`, Fisher’s exact test p= `r format(fisher.test(t)$p.value, digits=2, nsmall=1)`). In a multivariate analysis taking into account covariables and the population structure, the relationship becomes remains non-significant (OR `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),2]`, p `r geeORtable(fit)[grepl("contact_w", geeORtable(fit)[,1]),3]`).
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+# Effect of age of infector
+
+## Age of infectors and infectees
+
+```{r,  echo=FALSE}
+age_nocontact = llr$Age[llr$n_contacts==0]
+age_infectees = llr$Age[llr$n_contacts>=1]
+age_infectors = llr$Age[llr$id %in% unique(unlist(strsplit(as.character(llr$contact_id[!is.na(llr$contact_id)]), "\\,")))]
+```
+Mean age of infectees (`r format(mean(age_infectees), digits=1, nsmall=1)` years) is similar to mean age of infectors (`r format(mean(age_infectors), digits=1, nsmall=1)` years, Wilcoxon test, p=`r format(wilcox.test(age_infectors,age_infectees)$p.value, digits=1, nsmall=2)`). Both are significantly superior to the mean age of individuals whose infector could not be identified (`r format(mean(age_nocontact), digits=1, nsmall=1)` years, Wilcoxon test, p=`r format(wilcox.test(age_nocontact,age_infectees)$p.value, digits=2, nsmall=2)` and p=`r format(wilcox.test(age_nocontact,age_infectors)$p.value, digits=2, nsmall=2)`, respectively).  
+
+```{r,  echo=FALSE}
+library(ggplot2)
+library(ggpubr)
+df = data.frame(Type=c(rep("No contact",length(age_nocontact)),
+                       rep("Infectees",length(age_infectees)),
+                       rep("Infectors",length(age_infectors))),
+                Age =c(age_nocontact,age_infectees,age_infectors))
+my_comparisons <- list( c("No contact", "Infectees"), c("Infectors", "Infectees"), c("No contact", "Infectors"))
+g = ggplot(df, aes(x = factor(Type), y = Age))  +
+  geom_violin() + geom_boxplot(width=0.1) +
+  ylab("Age") +
+  scale_y_continuous(breaks=seq(0, 110+15, 10)) +
+  theme(legend.position = "none",axis.title.x=element_blank(),axis.ticks.x=element_blank(),
+        panel.grid.major.x = element_blank())
+g + stat_compare_means(comparisons = my_comparisons, label.y = c(90,95,100)+15, label = "p.signif") +
+  stat_compare_means(label.y = 120)
+```
+
+```{r,  echo=FALSE}
+correl <- with(llr[!is.na(llr$age_contact),],cor.test(Age, age_contact))
+```
+
+The age of infectors is poorly correlated with the age of infectees (Spearman r=`r format(correl$est, digits=3, nsmall=1)`, p=`r format(correl$p.value, digits=2, nsmall=1)`)
+
+```{r,  echo=FALSE}
+df=as.data.frame(with(llr,table(age_gp,age_contact_gp)))
+maxcount = max(df$Freq)
+df$color = ifelse(df$Freq<1,"0","1")
+ggplot(df, aes(x= age_contact_gp, y= age_gp)) + geom_point(aes(size = Freq,color=color),na.rm = TRUE) +
+  xlab("Age of infector") + ylab("Age of infectee") + scale_size(range = c(1, 10),name="Count") +
+  scale_color_manual(values = c("white", "black")) + guides(color=FALSE)
+```
+
+## Effect of adding the age of contact in the model
+### Influence of infector's age on the association between symptomatic form and symptomatic infector
+```{r, echo=FALSE,include=F}
+fit_ref = gee(Symptomatic ~ contact_with_symptomatic + Age + Gender_FM + Comorbidity,
+          data=llr[!is.na(llr$age_contact),],id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit = gee(Symptomatic ~ contact_with_symptomatic + age_contact + Age + Gender_FM + Comorbidity,
+          data=llr[!is.na(llr$age_contact),],id=wave,family=binomial,
+          corstr="exchangeable") 
+```
+
+In a multivariate analysis, the age of the infector slightly **decreases** the risk of developing a symptomatic form (OR `r geeORtable(fit)[grepl("age_contact", geeORtable(fit)[,1]),2]` per age year) and this relationship is close to significance threshold (p= `r geeORtable(fit)[grepl("age_contact", geeORtable(fit)[,1]),3]`). Adding the age of the infector modifies slightly the relationship between symptomatic form and symptomatic infector: in the same population, i.e. infectors with 1 contact identified, the OR of being a contact of a symptomatic case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the age of contact was not in the multivariate analysis, and OR was `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]` when considering the age of the infector in the model (see table below).
+
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+### Influence of infector's age on the association between severity in infectee and severity in infector
+
+```{r, echo=FALSE,include=F}
+fit_ref = gee(Severe ~ contact_with_severe + Age + Gender_FM + Comorbidity,
+          data=llr[!is.na(llr$age_contact),],id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit = gee(Severe ~ contact_with_severe + age_contact + Age + Gender_FM + Comorbidity,
+          data=llr[!is.na(llr$age_contact),],id=wave,family=binomial,corstr="exchangeable") 
+```
+
+Similarly, the age of the infector **decreases** the risk of developing a severe form (OR `r geeORtable(fit)[grepl("age_contact", geeORtable(fit)[,1]),2]` per age year, p `r geeORtable(fit)[grepl("age_contact", geeORtable(fit)[,1]),3]`). Adding the age of the infector also modifies the relationship between symptomatic form and symptomatic infector: in the same population, i.e. infectors with 1 contact identified, the OR of being a contact of a severe case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the age of contact was not in the multivariate analysis, and OR was `r geeORtable(fit)[grepl("contact_with", geeORtable(fit)[,1]),2]` when considering the age of the infector in the model (see table below).
+
+```{r ,echo=F}
+geeORtable(fit)
+```
+
+# Influence of healthcare
+To investigate whether this observation could be an artifact due to healthcare, e.g. better observation of symptoms among healthcare workers or when hospitalized, we introduced 2 variables in the multivariate model: 
+1. healthcare-related profession: there were `r sum(llr$HCW)` healthcare workers in the population (`r format(sum(llr$HCW)*100/nrow(llr), digits=1, nsmall=1)`%);
+2. belonging to a hospital cluster: there were `r sum(llr$Hospital_cluster)` individuals whose source of infection was related to an hospital in the population (`r format(sum(llr$Hospital_cluster)*100/nrow(llr), digits=1, nsmall=1)`%).
+
+> Lots of hospital-acquired infections! --> to be discussed!!!
+
+### Influence of healthcare on the association between symptomatic form and symptomatic infector
+```{r, echo=FALSE,include=F}
+fit_ref = gee(Symptomatic ~ contact_with_symptomatic + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit1 = gee(Symptomatic ~ contact_with_symptomatic + HCW + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit2 = gee(Symptomatic ~ contact_with_symptomatic + HCW + Hospital_cluster + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+```
+
+In a multivariate analysis, being a healthcare workers strongly **decreases** the risk of developing a symptomatic form (OR `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),2]`, p `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),3]`). Nevertheless, adding the age of the infector didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *healthcare worker* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when considering the profession.
+
+```{r ,echo=F}
+geeORtable(fit1)
+```
+
+In contrast, belonging to a healthcare cluster was not associated with the risk of developing a symptomatic form (OR `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),2]`, p= `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),3]`) and adding the age of the infector didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit2)[grepl("contact_with", geeORtable(fit2)[,1]),2]` when considering the type of cluster.
+
+```{r ,echo=F}
+geeORtable(fit2)
+```
+
+### Influence of healthcare on the association between severe form in infector and infectee
+```{r, echo=FALSE,include=F}
+fit_ref = gee(Severe ~ contact_with_severe + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit1 = gee(Severe ~ contact_with_severe + HCW + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+
+fit2 = gee(Severe ~ contact_with_severe + HCW + Hospital_cluster + Age + Gender_FM + Comorbidity,
+          data=llr,id=wave,family=binomial,
+          corstr="exchangeable") 
+```
+
+In a multivariate analysis, being a healthcare workers strongly **increases** the risk of developing a symptomatic form (OR `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),2]`, p `r geeORtable(fit1)[grepl("HCW", geeORtable(fit1)[,1]),3]`). Nevertheless, adding the age of the infector didn't modify the relationship between symptomatic form and symptomatic infector: the OR of being a contact of a symptomatic case was `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]` when the variable *healthcare worker* was not in the multivariate analysis, and OR was `r geeORtable(fit1)[grepl("contact_with", geeORtable(fit1)[,1]),2]` when considering the profession.
+
+```{r ,echo=F}
+geeORtable(fit1)
+```
+
+Belonging to a healthcare cluster was also associated with the risk of developing a severe form (OR `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),2]`, p `r geeORtable(fit2)[grepl("Hospital_cluster", geeORtable(fit2)[,1]),3]`), but adding the age of the infector didn't modify (significantly???) the relationship between severe form in infectee and infector: the OR of being a contact of a severe case was `r geeORtable(fit2)[grepl("contact_with", geeORtable(fit2)[,1]),2]` when considering the type of cluster (instead of `r geeORtable(fit_ref)[grepl("contact_with", geeORtable(fit_ref)[,1]),2]`).
+
+> I don't know how to test the significance of changes in a coef (here: contact_with_severe) when adding a variable (here: Hospital_cluster) to a model.
+> `gee(Severe ~ contact_with_severe + Hospital_cluster + HCW + Age + Gender_FM + Comorbidity, data=llr, id=wave, family=binomial, corstr="exchangeable")`
+
+```{r ,echo=F}
+geeORtable(fit2)
+```
+
+
+# Superspreaders
+
